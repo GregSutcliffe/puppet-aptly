@@ -39,10 +39,11 @@ class aptly::api (
   $group               = 'root',
   $listen              = ':8080',
   $log                 = 'none',
+  $config_file         = '/etc/aptly.conf',
   $enable_cli_and_http = false,
 ) {
 
-  validate_string($user, $group)
+  validate_string($user, $group, $config_file)
 
   validate_re($ensure, ['^stopped|running$'], 'Valid values for $ensure: stopped, running')
   validate_re($type, ['^upstart|systemd$'], 'Valid values for $type: upstart, systemd')

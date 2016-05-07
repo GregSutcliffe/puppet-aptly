@@ -2,7 +2,7 @@
 Description=Aptly API Service
 
 [Service]
-ExecStart=/usr/bin/aptly api serve -listen=<%= @listen %><% if @enable_cli_and_http %> -no-lock<% end %>
+ExecStart=/usr/bin/aptly -config <%= @config_file %> api serve -listen=<%= @listen %><% if @enable_cli_and_http %> -no-lock<% end %>
 User=<%= @user %>
 Group=<%= @group %>
 

@@ -8,4 +8,4 @@ console <%= @log %>
 setuid <%= @user %>
 setgid <%= @group %>
 
-exec /usr/bin/aptly api serve -listen=<%= @listen %><% if @enable_cli_and_http %> -no-lock<% end %>
+exec /usr/bin/aptly -config <%= @config_file %> api serve -listen=<%= @listen %><% if @enable_cli_and_http %> -no-lock<% end %>
