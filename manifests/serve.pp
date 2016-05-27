@@ -19,9 +19,11 @@ class aptly::serve (
   $docroot = '/var/lib/aptly/public',
   $servername = 'aptly',
   $serveraliases = [],
+  $htpasswd_contents = '',
 ) {
   validate_string($docroot)
   validate_string($servername)
+  validate_string($htpasswd_contents)
   validate_array($serveraliases)
 
   include ::apache
@@ -29,13 +31,41 @@ class aptly::serve (
   # Workaround so apache::vhost doesn't attempt to create a directory
   file { $docroot: }
 
-  apache::vhost { 'aptly':
-    add_default_charset     => 'UTF-8',
-    docroot                 => $docroot,
-    options                 => ['Indexes','FollowSymLinks'],
-    port                    => 80,
-    priority                => '05',
-    servername              => $servername,
-    serveraliases           => $serveraliases,
+  if $htpasswd_contents == '' {
+    apache::vhost { 'aptly':
+      add_default_charset => 'UTF-8',
+      options             => ['Indexes','FollowSymLinks'],
+      docroot             => $docroot,
+      port                => 80,
+      priority            => '05',
+      servername          => $servername,
+      serveraliases       => $serveraliases,
+    }
+  } else {
+    file { '/etc/apt.htpasswd':
+      ensure  => file,
+      content => $htpasswd_contents,
+    }
+    ->
+    apache::vhost { 'aptly':
+      add_default_charset     => 'UTF-8',
+      docroot                 => $docroot,
+      port                    => 80,
+      priority                => '05',
+      servername              => $servername,
+      serveraliases           => $serveraliases,
+      directories   => [
+        {
+          'path'               => "$docroot",
+          'provider'           => 'location',
+          'auth_user_file'     => '/etc/apt.htpasswd',
+          'auth_type'          => 'basic',
+          'auth_require'       => 'valid-user',
+          'auth_name'          => 'Auth Required for Apt Repo',
+          'allow_override'     => ['None'],
+          'options'            => ['Indexes','FollowSymLinks'],
+        }
+      ],
+    }
   }
 }
